@@ -8,7 +8,7 @@ species name and the order of the bird in each citation, whether athero was indu
 there is a mention of succeptibility or resistance to athero in each citation. 
 
 The aim of the project is to first visualize the phylogenetic map of spontanouse atherosclerosis in birds and determine whether the 
-differences in occurance of athero in different avian orders represents inherent succeptibility or resistance in particular bird orders. 
+differences in occurance of athero in different avian orders represent inherent succeptibility or resistance in particular bird orders. 
 So, I need to extract the number of occurances of athero in every avian order and format it to visualize it in R.
 Finally I will analyze the relationship between various potential factors such as body mass, captivity and 
 average flight altitude, and ocrrurance of spontanouse atherosclerosis. Although I'm not quite sure what statistical tool I will be using for
@@ -17,7 +17,35 @@ tests to assess the results.
 
 This research take an evolutionary medicine approach to the question of occuranc of the most common and fatal "human" diease in animals. 
 The succeptibility or resistence found in parituclar avian groups can point to the inherent evolutionary causes of athero in humans, which 
-can provide valuable insight into how evolution has shaped the facotrs that has increased humna's scucceptibility to atherosclerosis.
+can provide valuable insight into how evolution has shaped the factors that has increased humas's scucceptibility to atherosclerosis.
+
+I have extracted the uniqe species from our data set with the following shell command: 
+tail -n +2 athero.csv | cut -d "," -f 4 |sort|uniq. 
+
+Please note that there are more uniqe species, which are represnted by their orders in the citations, those will be covred at the time of avian
+order representation.
+
+Amazona amazonica
+Amazona aestiva aestiva
+Amazona farinosa
+Amazona ochrocephala ochrocephala
+Amazona ochrocephala oratrix
+Amazona viridigenalis
+Ara severa
+Brotogeris pyrrhopterus
+Buteo jamaicensis
+Cacatua galerita 
+Coturnix coturnix
+Coturnix japonica
+Cacatua tenuirostris
+Columba livia domestica
+Eolophus roseicapilla 
+Gallus gallus domesticus
+Haliastur Indus
+Meleagris gallopavo
+Psittacus erithacus
+
+
 
 
 
