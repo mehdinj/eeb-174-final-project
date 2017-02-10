@@ -19,14 +19,14 @@ This research take an evolutionary medicine approach to the question of occuranc
 The succeptibility or resistence found in parituclar avian groups can point to the inherent evolutionary causes of athero in humans, which 
 can provide valuable insight into how evolution has shaped the factors that has increased humas's scucceptibility to atherosclerosis.
 
-***I have extracted the uniqe order in my dataset with the following shell command:
+***I have extracted the uniqe order in my dataset with the following shell command:***
 
 *tail -n +2 athero.csv | cut -d "," -f 6 |sort|uniq*
 
-***List of all uniqe orders: ***
+**List of all uniqe orders:**
 
-*
-1-Anseriformes
+
+*1-Anseriformes
 2-Accipitriformes
 3-Ciconiiformes
 4-Columbiformes
