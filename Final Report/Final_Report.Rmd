@@ -1,0 +1,833 @@
+---
+title: "Evolution of Avian Atherosclerosis"
+author: "Mehdi Nojoumi"
+geometry: margin=1in
+output:
+  pdf_document: default
+header-includes:
+  \usepackage{float}
+fontsize: 12pt
+bibliography: biblio.bib
+csl: methods-in-ecology-and-evolution.csl
+
+---
+```{r , include=FALSE}
+
+knitr::opts_chunk$set(warning=FALSE,fig.pos = "H")
+
+```
+
+## Summary 
+  
+1-We took an evolutionary medicine approach to examine the evolution of spontaneous atherosclerosis in birds in order to discover models of susceptibility or resistance to atherosclerosis.  
+
+2-We conducted a systematic review of spontaneous atherosclerosis in Web of Science to identify the phylogenetic distribution of atherosclerosis in birds.  
+  
+3-We performed ancestral reconstruction of spontaneous atherosclerosis for reported bird orders in literature. We also performed stochastic character mapping for atherosclerosis.  
+
+  
+4-Although our ability to interpret the evolution of atherosclerosis in birds is limited due to scarce sampling, recent distribution of atherosclerosis in bird orders could be explained by recent or more older gains/losses of atherosclerosis in birds. In addition, the presence of atherosclerosis over a wide range of bird taxa suggests that vulnerability to atherosclerosis might be in some regards adaptive.   
+
+5-Adaptation mediated in part through immune and inflammatory responses particularly due to the benefits of a robust immune system for birds living in pathogenic environments might be a potential cause for vulnerability to atherosclerosis in birds.    
+
+
+## Introduction
+Cardiovascular disease specifically due to atherosclerosis includes ischemic heart disease as well as acute coronary syndromes (ACS), cerebrovascular disease (e.g. stroke), and peripheral vascular disease. Ischemic heart disease is a major contributor to global morbidity and mortality [@mendis2011global]. The genesis of atherosclerotic plaque and the mechanisms through which plaques come to crack and rupture are complex, multi-factorial, and have been exhaustively studied and characterized. The molecular biology, genetics, and physiology contributing to atherosclerosis has been extensively studied and characterized at cellular, organismic, and population-based levels [@Berenson_1998; @mcgill2000association].  
+Much less well-studied than the aforementioned mechanistic and developmental explanations relating to atherosclerosis and associated syndromes are the evolutionarily-framed questions of phylogeny and adaptation. First, the question of how spontaneous atherosclerosis has evolved in animals. Second, how some of the multitudes of biological factors contributing to atherosclerosis might have offered adaptive benefits. In other words, how vulnerability to atherosclerosis might have provided adaptive benefits to animal ancestors in the ecosystems in which they have evolved.  
+Atherosclerosis has been identified to occur spontaneously in animals from walruses and pigs, to cats, dogs and birds. Avian species both wild and captive seem particularly vulnerable to atherosclerosis with reports of myocardial infarction, stroke, ischemic cardiomyopathy and atherosclerotic aortic aneurysms and rupture [@finlayson1962atherosclerosis].    
+A benefit of looking at atherosclerosis from a phylogenetic perspective is to develop knowledge about the vulnerability of various animal groups. Once identified, high and low vulnerability groups can serve as natural animal models of disease resilience or susceptibility. Moreover, awareness of the occurrence of the atherosclerosis, even in one animal, expands conventional understanding of the contribution of modern environments, practices and habits. In addition, it casts light on the foundational question of vulnerability.  
+This research takes an evolutionary medicine approach to the question of occurrence of one of the most common and fatal "human" diseases in animals [@finlayson1962atherosclerosis]. Although the evolution of atherosclerosis in birds has not been explored in literature, other comparative studies have taken this approach for other diseases. For instance, @blumstein2015evolution have studies the capture myopathy in hooved mammals. @Abegglen_2015 have found a mechanism for cancer resistance in elephants in a similar comparative approach. The susceptibility or resistance found in particular avian groups can reveal inherent evolutionary causes of atherosclerosis in humans, which can provide valuable insight into how evolution has shaped the factors that have increased human's susceptibility to atherosclerosis.  
+
+## Methods
+### Systematic review
+We systematically reviewed articles that described and/or diagnosed spontaneous atherosclerosis in birds using the Web of Science Database for all databases and years. We searched for the term "{atherosclerosis OR arteriosclerosis} AND {bird* OR avian}". The review was conducted in three stages. We first screened the titles. We included articles that mention relevant topics such as atherosclerosis, arteriosclerosis, bird, avian, susceptibility, resistance, lipoproteins, lesions, inflammation, or rupture. We then reviewed the abstract and full-text of all remaining articles.  We included articles that described and/or diagnosed the occurrence of spontaneous atherosclerosis in birds. We excluded all articles that use dietary regimen to induce atherosclerosis.  Finally, we reviewed the references of all included articles and added additional relevant papers. We found 171 papers that met our criteria for the review.  
+
+\begin{figure}[H]
+\label{fig:PRISMAdiagrams}
+\includegraphics[width=8cm, height=12cm,keepaspectratio]{Figures/Figure1.jpg}
+\centering
+\caption{PRISMA Diagram describing individual steps of the literature search.}
+\end{figure}
+
+  
+## Data description 
+There are three main data files, which we have used. First data file is the results of the systematic review. We have compiled a large dataset that includes title, authors, abstracts, species, orders and status of captivity of the animal. We used the results of the systematic review to find the orders with reports of spontaneous atherosclerosis (See developing comparative database). A link to the github repository containing this file is shown below.  
+  
+[https://github.com/mehdinj/eeb-174-final-project]()  
+  
+  
+Second data file was the tree phylogeny of birds (.tre format). We used the file created by @jetz2012global to plot the tree of bird orders and to overlay probabilities of occurrence of atherosclerosis (See Studying the evolution of avian atherosclerosis).  
+
+Third data file we used was the taxonomy information of birds also provided by @jetz2012global. We used the data to find representative species for each order and to prune down the tree file using python and R.  
+    
+### Developing the comparative database
+First, we needed to know the orders that have reports of atherosclerosis. Therefore, I have extracted the unique orders from the results of the systematic review, with the following shell command: 
+```{bash, eval = FALSE}
+tail -n +2 athero.csv | cut -d "," -f 6 |sort|uniq
+```
+
+We have used this later to identify representative species from orders which have reports of atherosclerosis.
+```{bash, eval = FALSE}
+Accipitriformes
+Anseriformes
+Bucerotiformes
+Caprimulgiformes
+Casuariiformes
+Charadriiformes
+Ciconiifformes
+Columbiformes
+Coraciiformes
+Cuculiformes
+Falconiformes
+Galliformes
+Gruiformes
+Passeriformes
+Pelecaniformes
+Phoenicopteriformes
+Piciformes
+Psittaciformes
+Rehiformes
+Sphenisciformes
+Strigiformes
+Struthioniformes
+```
+  
+In order to prune down the tree to demonstrate only one representative from each order, we extracted representative species for all orders from the taxonomy data. The following function in python achieves this goal.  
+  
+```{python, eval=F}
+def make_tip_labels(filename="BLIOCPhyloMasterTaxPrumJarvis.csv"):
+#this function will extract one representative tip label(species) from every bird 
+#oder in the master taxonomy file
+
+ #tip label = list index 2, order = list index 13
+    import csv
+    import sys
+
+
+    file_object=open(filename, "r", encoding= "ISO-8859-15")#open the file
+
+    output=open("tip_label_reps.csv", "w")
+
+    master_phylo=csv.reader(file_object)#read the file line by line 
+
+    next(master_phylo,None)#skipping the header
+
+
+
+
+    tip_label_dict={} #defining dictionary that will eventually have all tipl labels 
+    #and orders
+
+    specie="Struthio_camelus"#defining the first species for temp specie repo
+    all_orders=["STRUTHIONIFORMES"]#defining the list of orders
+    order="STRUTHIONIFORMES"# defning first order for temp order repo
+
+    for line in master_phylo: #loop over every line of the master phylogeny file
+
+
+
+
+        if line[13] in all_orders: #overwriting the order if the order changes in a line
+            tip_label_dict[line[13]]=specie #populating the dictionary
+            specie=line[2] #defining the new specie in particular line
+
+        else:  
+
+
+
+            orde=line[13]#updating the new temp order
+            all_orders.append(line[13])#append the new order to the list of orders
+            specie=line[2] #defining the new specie in particular line    
+
+
+
+    return tip_label_dict
+```
+  
+The output is a dictionary of orders and their corresponding representative species, which will be used to prune the tree phylogeny of birds.  
+  
+```{python, eval=F}
+{'ACCIPITRIFORMES': 'Hieraaetus_weiskei',
+ 'ANSERIFORMES': 'Anas_eatoni',
+ 'APODIFORMES': 'Xiphorhynchus_elegans',
+ 'APTERYGIFORMES': 'Pyrilia_aurantiocephala',
+ 'BUCEROTIFORMES': 'Penelopides_samarensis',
+ 'CAPRIMULGIFORMES': 'Caprimulgus_heterurus',
+ 'CARIAMIFORMES': 'Cariama_cristata',
+ 'CASUARIIFORMES': 'Casuarius_unappendiculatus',
+ 'CHARADRIIFORMES': 'Gygis_microrhyncha',
+ 'CICONIIFORMES': 'Leptoptilos_crumeniferus',
+ 'COLIIFORMES': 'Urocolius_macrourus',
+ 'COLUMBIFORMES': 'Phapitreron_brunneiceps',
+ 'CORACIIFORMES': 'Todiramphus_recurvirostris',
+ 'CUCULIFORMES': 'Eudynamys_orientalis',
+ 'EURYPYGIFORMES': 'Chunga_burmeisteri',
+ 'FALCONIFORMES': 'Caracara_cheriway',
+ 'GALLIFORMES': 'Dendragapus_fuliginosus',
+ 'GAVIIFORMES': 'Eudyptes_moseleyi',
+ 'GRUIFORMES': 'Ducula_subflavescens',
+ 'MESITORNITHIFORMES': 'Mesitornis_unicolor',
+ 'MUSOPHAGIFORMES': 'Crinifer_zonurus',
+ 'OTIDIFORMES': 'Houbaropsis_bengalensis',
+ 'PASSERIFORMES': 'Cinclodes_olrogi',
+ 'PELECANIFORMES': 'Threskiornis_bernieri',
+ 'PHAETHONTIFORMES': 'Phaethon_rubricauda',
+ 'PHOENICOPTERIFORMES': 'Butorides_virescens',
+ 'PICIFORMES': 'Ramphastos_swainsonii',
+ 'PODICIPEDIFORMES': 'Aechmophorus_occidentalis',
+ 'PROCELLARIIFORMES': 'Thalassarche_carteri',
+ 'PSITTACIFORMES': 'Amazona_oratrix',
+ 'PTEROCLIDIFORMES': 'Pterocles_lichtensteinii',
+ 'RHEIFORMES': 'Rhea_americana',
+ 'SPHENISCIFORMES': 'Pelecanus_thagus',
+ 'STRIGIFORMES': 'Otus_siaoensis',
+ 'STRUTHIONIFORMES': 'Struthio_camelus',
+ 'SULIFORMES': 'Anhinga_novaehollandiae',
+ 'TINAMIFORMES': 'Apteryx_mantelli',
+ 'TROGONIFORMES': 'Trogon_aurantiiventris'}
+```
+
+In order to confirm that the extracted representative species exist in the tree file, we have searched and identified the representative species that were found in the tree file.
+
+```{python, eval=F}
+def check_tip_labels(tip_label_dict):
+#this function will check if the extracted tip labels from make_tip_labels function 
+#exist in master bird tree file and prints the species missed and macthed
+
+    import csv
+    import sys
+    import re
+
+    file_object=open("Hackett_Stage2_1K_MCCtree_TargetHeights.tre","r")#opens master 
+    #bird tree
+    
+    master_bird_tree=file_object.read()#reads master bird tree as a string
+
+
+
+    matches=0 #startig matches and misses counter
+    misses=0 
+    for values, keys in tip_label_dict.items():#loop goes over all key value pairs 
+    #in the dictionary provided by m
+
+        if re.match(pattern=keys, string=master_bird_tree)!="": #if search for the 
+        #tip label is not empty, increase match by one
+            matches=matches+1 #increases macthed by one
+            print("Specie matched = "+keys) #prints the tip label that had been 
+            #matched
+        else:
+            misses=misses+1 #otherwise, increases misses by one
+
+    print("Matches = "+str(matches)+", Misses = "+str(misses)) #print the number of 
+    #matches and misses
+```
+
+
+The output confirms the representative species that have been matched along with the number of matched and missed species.
+
+```{python, eval=F}
+Specie matched = Urocolius_indicus
+Specie matched = Tinamotis_ingoufi
+Specie matched = Eleothreptus_anomalus
+Specie matched = Merops_nubicus
+Specie matched = Struthio_camelus
+Specie matched = Aegotheles_albertisi
+Specie matched = Rhynchortyx_cinctus
+Specie matched = Sypheotides_indicus
+Specie matched = Neomorphus_pucheranii
+Specie matched = Fulica_cornuta
+Specie matched = Uratelornis_chimaera
+Specie matched = Eurypyga_helias
+Specie matched = Dromaius_novaehollandiae
+Specie matched = Phaethon_lepturus
+Specie matched = Fratercula_cirrhata
+Specie matched = Rhinopomastus_minor
+Specie matched = Rhea_pennata
+Specie matched = Monias_benschi
+Specie matched = Ortyxelos_meiffrenii
+Specie matched = Triclaria_malachitacea
+Specie matched = Chelidoptera_tenebrosa
+Specie matched = Falco_fasciinucha
+Specie matched = Fregata_andrewsi
+Specie matched = Spheniscus_mendiculus
+Specie matched = Phalacrocorax_featherstoni
+Specie matched = Gavia_adamsii
+Specie matched = Psophia_viridis
+Specie matched = Didunculus_strigirostris
+Specie matched = Apteryx_haastii
+Specie matched = Aechmophorus_clarkii
+Specie matched = Oceanodroma_furcata
+Specie matched = Sarcoramphus_papa
+Specie matched = Sagittarius_serpentarius
+Specie matched = Opisthocomus_hoazin
+Specie matched = Harpactes_wardi
+Specie matched = Mergus_merganser
+Specie matched = Scopus_umbretta
+Specie matched = Corythaeola_cristata
+Specie matched = Selasphorus_ardens
+Matches = 39, Misses = 0
+```
+  
+In order to prune the tree file to bird orders, we needed to drop all species that were not part of representative species, which we have extracted before. Therefore, we created a function in python to output a .csv file containing all species that are not part of the list of representative species.
+
+```{python, eval=F}
+def make_non_occurance(tip_label_dict, filename="BLIOCPhyloMasterTaxPrumJarvis.csv"):
+#this function extracts all non-representative species in order to drop those tip 
+#labels when working with R
+
+    #tip label = list index[2]  order = list index [13]
+
+    import csv
+    import sys
+
+
+    file_object=open(filename, "r", encoding= "ISO-8859-15")#open the file
+
+    master_phylo=csv.reader(file_object)#read the file line by line 
+
+    next(master_phylo,None)#skipping the header
+
+    output=open("non_occurance_reps.csv", "w")#opening output file
+
+
+
+    for line in master_phylo: #loop over every line of the master phylogeny file
+
+
+
+
+        if line[2] not in dd.values(): #if the species is not in the list of 
+        #representative species, it will be in output
+
+            output.write(line[2]+"\r") #populating otput file with 
+            #non-representative species 
+           
+```
+  
+The output file is a large file containing ~ 10,000 lines. A small heading of the output is shown here.
+```{python, eval=F}
+Rhea_pennata,
+Casuarius_casuarius,
+Casuarius_bennetti,
+Dromaius_novaehollandiae,
+Apteryx_australis,
+Apteryx_owenii,
+Apteryx_haastii,
+Tinamus_tao,
+Tinamus_solitarius,
+Tinamus_osgoodi,
+Tinamus_major,
+Tinamus_guttatus,
+Nothocercus_bonapartei,
+Nothocercus_julius,
+Nothocercus_nigrocapillus,
+Crypturellus_berlepschi,
+Crypturellus_cinereus,
+Crypturellus_soui,
+Crypturellus_ptaritepui,
+Crypturellus_obsoletus,
+Crypturellus_cinnamomeus,
+...
+```
+
+We also needed a list of all representative species of orders that have reports of atherosclerosis to mark the presence of atherosclerosis in bird orders. The following function achieves this goal. 
+```{python, eval=F}
+def make_occurance(filename= "Dataset.csv"):
+#this function will extract all orders of occurance of athero from a csv file and
+#outputs the representative of each order that has been chosen by function 1
+#this function is used to make a list of occurance order for later use in Rstudio
+
+    import csv
+    import sys
+
+    file_object=open(filename, encoding= "ISO-8859-15") #openning the input file
+
+    reader=file_object.readlines()[1:] #reads the input file
+
+
+
+    output=open("occurance_species.csv", "w") #opens the output file foe later 
+    #analysis in R
+
+
+
+
+    function_1_output=make_tip_labels() #this defines the function 1 output but it 
+    #is modified here for purpose of demonstration
+
+    for line in reader:
+
+
+        output.write(function_1_output[line]+"\r") #populates the output file, "\n" 
+        #could also be used here, "\r" was used here because Rstudio handles "\r" 
+        #better for later analysis
+
+
+        print(function_1_output[line]) #for the purpose of demonstration the, output 
+        #is shown here as well!
+```
+  
+
+  
+Output shows a list of representative species from orders with reports of atherosclerosis.
+  
+```{python, eval=F}
+Ducula_subflavescens
+Phapitreron_brunneiceps
+Threskiornis_bernieri
+Hieraaetus_weiskei
+Caracara_cheriway
+Amazona_oratrix
+Struthio_camelus
+Dendragapus_fuliginosus
+Leptoptilos_crumeniferus
+Anas_eatoni
+...
+```
+  
+### Studying the evolution of avian atherosclerosis
+We created a discrete variable for occurrence/non-occurrence of "spontaneous atherosclerosis" to determine the phylogenetic distribution of reported cases of atherosclerosis. We scored bird orders with reports for occurrence of spontaneous atherosclerosis as occurrence of atherosclerosis while we scored orders with no such reports as non-occurrence. We obtained phylogenetic tree and taxonomy from a previous study [@jetz2012global].  
+We reconstructed ancestral states in birds for spontaneous atherosclerosis using the R packages Analyses of Phylogenetics and Evolution, and Phylogenetic Tools for Comparative Biology [@paradis2004ape; @revell2012phytools]. We estimated the history of the atherosclerosis evolution, calculated the probability of occurrence of spontaneous atherosclerosis in each internal node and juxtaposed the fit of different models of character evolution. We used both equal rates (ER) model, which assumes that the rates of gains and losses of atherosclerosis are equal, and all rates different (ARD) model that assumes different rates for gains and losses of atherosclerosis. We used log-likelihood to compare the fit of the models.  
+  
+Code below performs the ancestral reconstruction of ER model:
+```{r, eval= F, echo= T}
+#Install packages if needed!
+#install.packages("devtools")
+#install.packages("phytools")
+#install.packages("psych")
+#install.packages("ape")
+#install.packages("geiger")
+
+#updating the library
+suppressPackageStartupMessages(library(devtools))
+suppressPackageStartupMessages(library(psych))
+suppressPackageStartupMessages(library(ape))
+
+suppressPackageStartupMessages(library(geiger))
+suppressPackageStartupMessages(library(phytools))
+
+#all species of non-occurance
+nooccuranceallspecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/non_occurance_reps.csv", header = TRUE)
+knitr::kable(head(nooccuranceallspecies))
+#for reading the tree
+complete.tree<-read.tree(file="/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/Hackett_Stage2_1K_MCCtree_TargetHeights.tre")
+
+#openning occurance species csv file
+occurancespecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/bird_occurance_reps_new.csv", header = TRUE)
+
+# making a list of species to drop later on
+taxa_to_drop=("")
+i<-1
+for (j in nooccuranceallspecies$Species){
+  taxa_to_drop[[i]]<-j
+  i=i+1
+  }
+#making a list of orders to replace the tip labels
+bird_reps_orders<-c("PASSERIFORMES","APODIFORMES","PSITTACIFORMES","APTERYGIFORMES",
+"FALCONIFORMES","CARIAMIFORMES","EURYPYGIFORMES","COLIIFORMES","PICIFORMES","CORACIIFORMES",
+"BUCEROTIFORMES","TROGONIFORMES","STRIGIFORMES","ACCIPITRIFORMES","CHARADRIIFORMES",
+"CAPRIMULGIFORMES","PHOENICOPTERIFORMES","PELECANIFORMES","SPHENISCIFORMES","SULIFORMES",
+"CICONIIFORMES","PROCELLARIIFORMES","GAVIIFORMES","MUSOPHAGIFORMES","OTIDIFORMES",
+"CUCULIFORMES","PODICIPEDIFORMES","PTEROCLIDIFORMES","PHAETHONTIFORMES","GRUIFORMES",
+"COLUMBIFORMES","MESITORNITHIFORMES","GALLIFORMES","ANSERIFORMES","CASUARIIFORMES",
+"TINAMIFORMES","RHEIFORMES","STRUTHIONIFORMES")
+#for removing the unwanted tips
+simple.tree<-drop.tip(complete.tree,taxa_to_drop)
+
+#setting discrete variable as a factor:
+x<-setNames(occurancespecies$Occurance,bird_reps_orders)
+
+#  model with the backward & forward rates between states are permitted to have different values
+fitER<-ace(x,simple.tree,model="ER",type="discrete")
+
+#chaning the tip labels to otders
+simple.tree$tip.label<-bird_reps_orders
+
+#plotting ER model on the tree
+
+cols<-setNames(c("red","blue"),levels(x))
+plotTree(simple.tree,fsize=0.62,ftype="i",lwd=1)
+
+#setting pie charts on internal nodes
+nodelabels(node=1:simple.tree$Nnode+Ntip(simple.tree),
+           pie=fitER$lik.anc,piecol=cols,cex=0.4)
+
+#putting tip labels on the tree along with pie charts on tips
+tiplabels(pie=to.matrix(x[simple.tree$tip.label],levels(x)),
+          piecol=cols,cex=0.3)
+
+#making a legened for the graph 
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0.4*par()$usr[1],
+                  y=-10.7*par()$usr[3],fsize=0.8,leg = c("Athero", "No Athero"))
+
+```
+
+  
+Code below performs the ancestral reconstruction of ARD model:    
+  
+```{r, eval= F, echo= T}
+#Install packages if needed!
+#install.packages("devtools")
+#install.packages("phytools")
+#install.packages("psych")
+#install.packages("ape")
+#install.packages("geiger")
+
+
+
+#all species of non-occurance
+nooccuranceallspecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/non_occurance_reps.csv", header = TRUE)
+
+#for reading the tree
+complete.tree<-read.tree(file="/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/Hackett_Stage2_1K_MCCtree_TargetHeights.tre")
+
+#openning occurance species csv file
+occurancespecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/bird_occurance_reps_new.csv", header = TRUE)
+
+# making list of species to drop
+taxa_to_drop=("")
+i<-1
+for (j in nooccuranceallspecies$Species){
+  taxa_to_drop[[i]]<-j
+  i=i+1
+  }
+
+#making a list of orders to replace the tip labels
+bird_reps_orders<-c("PASSERIFORMES","APODIFORMES","PSITTACIFORMES","APTERYGIFORMES",
+"FALCONIFORMES","CARIAMIFORMES","EURYPYGIFORMES","COLIIFORMES","PICIFORMES","CORACIIFORMES",
+"BUCEROTIFORMES","TROGONIFORMES","STRIGIFORMES","ACCIPITRIFORMES","CHARADRIIFORMES",
+"CAPRIMULGIFORMES","PHOENICOPTERIFORMES","PELECANIFORMES","SPHENISCIFORMES","SULIFORMES",
+"CICONIIFORMES","PROCELLARIIFORMES","GAVIIFORMES","MUSOPHAGIFORMES","OTIDIFORMES",
+"CUCULIFORMES","PODICIPEDIFORMES","PTEROCLIDIFORMES","PHAETHONTIFORMES","GRUIFORMES",
+"COLUMBIFORMES","MESITORNITHIFORMES","GALLIFORMES","ANSERIFORMES","CASUARIIFORMES",
+"TINAMIFORMES","RHEIFORMES","STRUTHIONIFORMES")
+
+#for removing the unwanted tips
+simple.tree<-drop.tip(complete.tree,taxa_to_drop)
+
+#setting discrete variable as a factor:
+x<-setNames(occurancespecies$Occurance,bird_reps_orders)
+
+#model with the backward & forward rates between states are permitted to have 
+#different values
+fitARD<-ace(x,simple.tree,model="ARD",type="discrete")
+
+#chaning the tip labels to orders
+simple.tree$tip.label<-bird_reps_orders
+
+#plotting ARD model on the tree
+
+cols<-setNames(c("red","blue"),levels(x))
+plotTree(simple.tree,fsize=0.62,ftype="i",lwd=1)
+
+#setting pie charts on internal nodes
+nodelabels(node=1:simple.tree$Nnode+Ntip(simple.tree),
+           pie=fitARD$lik.anc,piecol=cols,cex=0.4)
+
+#putting tip labels on the tree along with pie charts on tips
+tiplabels(pie=to.matrix(x[simple.tree$tip.label],levels(x)),
+          piecol=cols,cex=0.3)
+
+#making a legened for the graph 
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0.4*par()$usr[1],
+                  y=-10.7*par()$usr[3],fsize=0.8,leg = c("Athero", "No Athero"))
+
+```
+  
+In addition, we performed stochastic character map using empirical Bayes method described by @nielsen2002mapping and @huelsenbeck2003stochastic.   
+  
+```{r , eval= F, echo= T}
+#plotting 100 stochastic character maps from our dataset:
+mtrees<-make.simmap(tree = simple.tree,x,model="ARD",nsim=100)
+
+#summarizing the simulations
+pd<-summary(mtrees)
+
+#plotting the estimates of the simulation results
+plot(pd,fsize=0.6,ftype="i",colors=cols,ylim=c(-2,Ntip(simple.tree)))
+
+#adding legened to the graph
+add.simmap.legend(colors=cols[2:1],prompt=FALSE,x=-0*par()$usr[1],y=1*par()$usr[3],fsize=0.8,vertical=FALSE, leg = c("Athero","No Athero"))
+```
+## Results
+### The evolution of avian atherosclerosis 
+Although the difference in the fit of the ER and ARD model is not substantial, the ARD model fit the data slightly better than the ER model (ARD log-likelihood: -25.17077, ER log-likelihood: -25.64645). Under the ARD model, our data suggests a slightly higher probability of presence of spontaneous atherosclerosis at all internal nodes. The root has an equal probability of presence or absence of atherosclerosis. Estimates of the rates of gains and losses of atherosclerosis for all models are summarized in the table below.  
+  
+```{r, eval= T, echo= F}
+table1<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/table1.csv", header = TRUE)
+knitr::kable(head(table1), caption ="Estimates of rates of gains and losses of atherosclerosis for ER, ARD and stochastic mapping", align = 'c' )
+```
+
+
+
+```{r, eval= T, echo= F, fig.width=5, fig.height=6, fig.align= 'left', fig.cap="Ancestral reconstruction of the evolution of atherosclerosis in birds under ER model of evolution. Red circles orders in which atherosclerosis has been reported. The red portion of internal node pie chart indicates the probability that atherosclerosis was present at an internal node."}
+
+#install.packages("devtools")
+#install.packages("phytools")
+#install.packages("psych")
+#install.packages("ape")
+#install.packages("geiger")
+
+suppressPackageStartupMessages(library(devtools))
+suppressPackageStartupMessages(library(psych))
+suppressPackageStartupMessages(library(ape))
+
+suppressPackageStartupMessages(library(geiger))
+suppressPackageStartupMessages(library(phytools))
+
+#all species of non-occurance
+nooccuranceallspecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/non_occurance_reps.csv", header = TRUE)
+
+#for reading the tree
+complete.tree<-read.tree(file="/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/Hackett_Stage2_1K_MCCtree_TargetHeights.tre")
+
+#openning occurance species csv file
+occurancespecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/bird_occurance_reps_new.csv", header = TRUE)
+
+taxa_to_drop=("")
+i<-1
+for (j in nooccuranceallspecies$Species){
+  taxa_to_drop[[i]]<-j
+  i=i+1
+  }
+
+#making a list of orders to replace the tip labels
+bird_reps_orders<-c("PASSERIFORMES","APODIFORMES","PSITTACIFORMES","APTERYGIFORMES",
+"FALCONIFORMES","CARIAMIFORMES","EURYPYGIFORMES","COLIIFORMES","PICIFORMES","CORACIIFORMES",
+"BUCEROTIFORMES","TROGONIFORMES","STRIGIFORMES","ACCIPITRIFORMES","CHARADRIIFORMES",
+"CAPRIMULGIFORMES","PHOENICOPTERIFORMES","PELECANIFORMES","SPHENISCIFORMES","SULIFORMES",
+"CICONIIFORMES","PROCELLARIIFORMES","GAVIIFORMES","MUSOPHAGIFORMES","OTIDIFORMES",
+"CUCULIFORMES","PODICIPEDIFORMES","PTEROCLIDIFORMES","PHAETHONTIFORMES","GRUIFORMES",
+"COLUMBIFORMES","MESITORNITHIFORMES","GALLIFORMES","ANSERIFORMES","CASUARIIFORMES",
+"TINAMIFORMES","RHEIFORMES","STRUTHIONIFORMES")
+
+#for removing the unwanted tips
+simple.tree<-drop.tip(complete.tree,taxa_to_drop)
+
+#setting discrete variable as a factor:
+x<-setNames(occurancespecies$Occurance,bird_reps_orders)
+
+#  model with the backward & forward rates between states are permitted to have different values
+fitER<-ace(x,simple.tree,model="ER",type="discrete")
+
+
+#chaning the tip labels to orders
+simple.tree$tip.label<-bird_reps_orders
+
+#plotting ARD model on the tree
+
+cols<-setNames(c("red","blue"),levels(x))
+plotTree(simple.tree,fsize=0.62,ftype="i",lwd=1)
+nodelabels(node=1:simple.tree$Nnode+Ntip(simple.tree),
+           pie=fitER$lik.anc,piecol=cols,cex=0.4)
+tiplabels(pie=to.matrix(x[simple.tree$tip.label],levels(x)),
+          piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0.4*par()$usr[1],
+                  y=-10.7*par()$usr[3],fsize=0.8,leg = c("Athero", "No Athero"))
+
+```
+
+
+```{r, eval= T, echo= F, fig.width=5, fig.height=6, fig.align= 'left', fig.cap="Ancestral reconstruction of the evolution of atherosclerosis in birds under ARD model of evolution. Red circles indicate orders in which atherosclerosis has been reported. The red portion of internal node pie chart indicates the probability that atherosclerosis was present at an internal node."}
+
+#install.packages("devtools")
+#install.packages("phytools")
+#install.packages("psych")
+#install.packages("ape")
+#install.packages("geiger")
+
+
+
+#all species of non-occurance
+nooccuranceallspecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/non_occurance_reps.csv", header = TRUE)
+
+#for reading the tree
+complete.tree<-read.tree(file="/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/Hackett_Stage2_1K_MCCtree_TargetHeights.tre")
+
+#openning occurance species csv file
+occurancespecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/bird_occurance_reps_new.csv", header = TRUE)
+
+taxa_to_drop=("")
+i<-1
+for (j in nooccuranceallspecies$Species){
+  taxa_to_drop[[i]]<-j
+  i=i+1
+  }
+
+#making a list of orders to replace the tip labels
+bird_reps_orders<-c("PASSERIFORMES","APODIFORMES","PSITTACIFORMES","APTERYGIFORMES",
+"FALCONIFORMES","CARIAMIFORMES","EURYPYGIFORMES","COLIIFORMES","PICIFORMES","CORACIIFORMES",
+"BUCEROTIFORMES","TROGONIFORMES","STRIGIFORMES","ACCIPITRIFORMES","CHARADRIIFORMES",
+"CAPRIMULGIFORMES","PHOENICOPTERIFORMES","PELECANIFORMES","SPHENISCIFORMES","SULIFORMES",
+"CICONIIFORMES","PROCELLARIIFORMES","GAVIIFORMES","MUSOPHAGIFORMES","OTIDIFORMES",
+"CUCULIFORMES","PODICIPEDIFORMES","PTEROCLIDIFORMES","PHAETHONTIFORMES","GRUIFORMES",
+"COLUMBIFORMES","MESITORNITHIFORMES","GALLIFORMES","ANSERIFORMES","CASUARIIFORMES",
+"TINAMIFORMES","RHEIFORMES","STRUTHIONIFORMES")
+
+#for removing the unwanted tips
+simple.tree<-drop.tip(complete.tree,taxa_to_drop)
+
+#setting discrete variable as a factor:
+x<-setNames(occurancespecies$Occurance,bird_reps_orders)
+
+# model with the backward & forward rates between states are permitted to have 
+#different values
+fitARD<-ace(x,simple.tree,model="ARD",type="discrete")
+
+
+#changing tip labels to orders
+simple.tree$tip.label<-bird_reps_orders
+
+#plotting ARD model on the tree
+
+cols<-setNames(c("red","blue"),levels(x))
+plotTree(simple.tree,fsize=0.62,ftype="i",lwd=1)
+nodelabels(node=1:simple.tree$Nnode+Ntip(simple.tree),
+           pie=fitARD$lik.anc,piecol=cols,cex=0.4)
+tiplabels(pie=to.matrix(x[simple.tree$tip.label],levels(x)),
+          piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0.4*par()$usr[1],
+                  y=-10.7*par()$usr[3],fsize=0.8,leg = c("Athero", "No Athero"))
+
+```
+
+Stochastic character mapping using the Bayesian method shows different probabilities of presence of spontaneous atherosclerosis at internal nodes. All ancestral states have higher probabilities of presence of atherosclerosis, similar to ARD model. Contrary to ARD model, the root has slightly higher probability of absence of atherosclerosis.  
+
+
+```{r ,  warning=FALSE, eval= T, echo= F, fig.width=5, fig.height=6, fig.align='left', fig.cap="Stochastic character mapping using the Bayesian method for mapping Atherosclerosis on the bird phylogeny. Red circles indicate orders in which atherosclerosis has been reported. The red portion of internal node pie chart indicates the probability that atherosclerosis was present at an internal node."}
+#plotting 100 stochastic character maps from our dataset:
+mtrees<-make.simmap(tree = simple.tree,x,model="ARD",nsim=100)
+pd<-summary(mtrees)
+
+plot(pd,fsize=0.6,ftype="i",colors=cols,ylim=c(-2,Ntip(simple.tree)))
+
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0*par()$usr[1],y=1*par()$usr[3],fsize=0.8,leg = c("Athero","No Athero"), vertical=FALSE)
+
+```
+
+```{r , warning=FALSE, eval= T, echo= F, fig.width=5, fig.height=6, fig.align='left', fig.cap="Density tree of stochastic character mapping using the Bayesian method for mapping Atherosclerosis on the bird phylogeny. The color on the evolutionary timeline indicate the probability of presence of athersclerosis according to the probability of presence of atherosclerosis at internal nodes "}
+
+#making density map:
+obj<-densityMap(mtrees,states=levels(x)[2:1],plot=FALSE)
+plot(obj,fsize=c(0.6,1))
+```
+Differences in the probabilities of the presence of atherosclerosis at internal nodes in ARD model relative to stochastic mapping is due to some of the limitations in the parsimony method of mapping traits. Parsimony method does not account for uncertainty in the trait evolution. It thoroughly relies on the most parsimonious mapping without considering other slightly less parsimonious scenarios that are a good fit for the data [@nielsen2002mapping; @huelsenbeck2003stochastic; @bollback2006simmap].  
+
+  
+###Further exploration of results
+So far, our results have been strictly limited to reports of atherosclerosis in orders. There are a number of limitations associated with this method. First, although some smaller orders are closely related to multiple orders with occurrence of atherosclerosis, they are lesser known and have less chances of diagnosis of atherosclerosis. Ignoring their potential underrepresentation will influence the results, changing the probabilities of presence of atherosclerosis at internal nodes and the root. Examples of these orders include Tinamiformes, Mesitornithiformes, Suliformes and Trogoniformes. Although any modification should be taken with skepticism, the assumption that these orders have occurrence of atherosclerosis which has not yet been revealed is, to some degree, justifiable.  
+  
+Second, number of cases reported should be taken into consideration when identifying the orders that express atherosclerosis. It is debatable whether orders with only very few reports do, in fact, show presence of atherosclerosis. These orders include Ciconiformes, Cuculiformes and Falconiformes.   
+  
+If we adjust the orders according to these two points mentioned above, we can regenerate models of atherosclerosis evolution in birds. For instance, the ARD model would predict the following graph.  
+ 
+```{r, eval= T, echo= F, fig.width=5, fig.height=6, fig.align= 'left', fig.cap="Ancestral reconstruction of the evolution of atherosclerosis in birds under ARD model of evolution adjusted for underrepresented order and order with very few cases of atherosclerosis. Red circles indicate orders in which atherosclerosis has been reported. The red portion of internal node pie chart indicates the probability that atherosclerosis was present at an internal node."}
+
+#install.packages("devtools")
+#install.packages("phytools")
+#install.packages("psych")
+#install.packages("ape")
+#install.packages("geiger")
+
+suppressPackageStartupMessages(library(devtools))
+suppressPackageStartupMessages(library(psych))
+suppressPackageStartupMessages(library(ape))
+
+suppressPackageStartupMessages(library(geiger))
+suppressPackageStartupMessages(library(phytools))
+
+#all species of non-occurance
+nooccuranceallspecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/non_occurance_reps.csv", header = TRUE)
+
+#for reading the tree
+complete.tree<-read.tree(file="/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/Hackett_Stage2_1K_MCCtree_TargetHeights.tre")
+
+#openning occurance species csv file
+occurancespecies<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/bird_occurance_reps_new_adjusted.csv", header = TRUE)
+
+taxa_to_drop=("")
+i<-1
+for (j in nooccuranceallspecies$Species){
+  taxa_to_drop[[i]]<-j
+  i=i+1
+  }
+
+#making a list of orders to replace the tip labels
+bird_reps_orders<-c("PASSERIFORMES","APODIFORMES","PSITTACIFORMES","APTERYGIFORMES",
+"FALCONIFORMES","CARIAMIFORMES","EURYPYGIFORMES","COLIIFORMES","PICIFORMES","CORACIIFORMES",
+"BUCEROTIFORMES","TROGONIFORMES","STRIGIFORMES","ACCIPITRIFORMES","CHARADRIIFORMES",
+"CAPRIMULGIFORMES","PHOENICOPTERIFORMES","PELECANIFORMES","SPHENISCIFORMES","SULIFORMES",
+"CICONIIFORMES","PROCELLARIIFORMES","GAVIIFORMES","MUSOPHAGIFORMES","OTIDIFORMES",
+"CUCULIFORMES","PODICIPEDIFORMES","PTEROCLIDIFORMES","PHAETHONTIFORMES","GRUIFORMES",
+"COLUMBIFORMES","MESITORNITHIFORMES","GALLIFORMES","ANSERIFORMES","CASUARIIFORMES",
+"TINAMIFORMES","RHEIFORMES","STRUTHIONIFORMES")
+
+#for removing the unwanted tips
+simple.tree<-drop.tip(complete.tree,taxa_to_drop)
+
+#setting discrete variable as a factor:
+x<-setNames(occurancespecies$Occurance,bird_reps_orders)
+
+# model with the backward & forward rates between states are permitted to have 
+#different values
+fitARD<-ace(x,simple.tree,model="ARD",type="discrete")
+
+
+#changing tip labels to orders
+simple.tree$tip.label<-bird_reps_orders
+
+#plotting ARD model on the tree
+
+cols<-setNames(c("red","blue"),levels(x))
+plotTree(simple.tree,fsize=0.62,ftype="i",lwd=1)
+nodelabels(node=1:simple.tree$Nnode+Ntip(simple.tree),
+           pie=fitARD$lik.anc,piecol=cols,cex=0.4)
+tiplabels(pie=to.matrix(x[simple.tree$tip.label],levels(x)),
+          piecol=cols,cex=0.3)
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0.4*par()$usr[1],
+                  y=-10.7*par()$usr[3],fsize=0.8,leg = c("Athero", "No Athero"))
+
+```
+Log-likelihood of adjusted model is virtually the same and estimates of gains/loss of atherosclerosis is the same as the last ARD model up to two significant figures.    
+  
+```{r, eval= T, echo= F}
+table1<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/table2.csv", header = TRUE)
+knitr::kable(head(table1), caption ="Estimates of rates of gain and loss of atherosclerosis for ARD model  with some orders adjusted", align = 'c' )
+```
+
+The probability of presence of atherosclerosis is the same in the root ,and it shows very little difference at internal nodes compared to last ARD model. This suggest a robustness in the model that is uncharacteristic of the reconstruction with scare sampling. According to ARD model, the current distribution of atherosclerosis in bird orders can be explained by recent or older gains/losses of atherosclerosis, which limits our ability to interpret the evolution of atherosclerosis in birds.  
+  
+However, if we perform stochastic mapping on the adjusted orders, we get a very different picture of evolution of atherosclerosis in birds.  
+
+```{r ,  warning=FALSE, eval= T, echo= F, fig.width=5, fig.height=6, fig.align='left', fig.cap="Stochastic character mapping using the Bayesian method for mapping Atherosclerosis on the bird phylogeny for adjusted orders. Red circles indicate orders in which atherosclerosis has been reported. The red portion of internal node pie chart indicates the probability that atherosclerosis was present at an internal node."}
+#plotting 100 stochastic character maps from our dataset:
+mtrees<-make.simmap(tree = simple.tree,x,model="ARD",nsim=100)
+pd<-summary(mtrees)
+
+plot(pd,fsize=0.6,ftype="i",colors=cols,ylim=c(-2,Ntip(simple.tree)))
+
+add.simmap.legend(colors=cols,prompt=FALSE,x=-0*par()$usr[1],y=1*par()$usr[3],fsize=0.8,leg = c("Athero","No Athero"), vertical=FALSE)
+
+```
+
+```{r, eval= T, echo= F}
+table1<-read.csv("/home/eeb177-student/Desktop/eeb-177/eeb-174-final-project/Final Report/table3.csv", header = TRUE)
+knitr::kable(head(table1), caption ="Estimates of rates of gain and loss of atherosclerosis for stochastic mapping with some orders adjusted", align = 'c' )
+```
+  
+Results of the stochastic mapping for adjusted orders suggests two main points. First, the common ancestor of all birds and ancient ancestors were most likely not vulnerable to atherosclerosis. Second, vulnerability to atherosclerosis has evolved multiple times during the evolution of birds. This suggests that there might be a potential adaptive benefit to decelopment of vulnerability to atherosclerosis in birds.  
+  
+## Discussion
+There are a number of limitations regarding our data and interpretation made about evolution of spontaneous atherosclerosis. First, reports of the occurrence of atherosclerosis in birds are limited by the available data. Notably, there is no reliable way to estimate the prevalence of atherosclerosis in birds given the extremely few numbers of wild birds who have necropsies after death, which leads to diagnosis of the disease [@recher1985causes].  In addition, missing data can heavily influence the ancestral state reconstruction and estimates of the atherosclerosis evolution [@blumstein2015evolution]. Although the occurrence of even a single case in a species could point to underlying vulnerability in taxa, the binary trait of presence or absence of atherosclerosis means that missing data can alter the results. Second, atherosclerosis has a spectrum of effects, which might affect a bigger subset of bird phylogeny. For instance, atherosclerosis plaque genesis is possibly more prevalent in birds with only a fraction of those birds showing symptoms of atherosclerosis and sacrificed for necropsy.  
+Despite these limitations, multiple evolutions of atherosclerosis over a wide range of bird taxa suggests that one or more components of atherogenesis has or had adaptive benefits. Atherogenesis and its associated syndromes involve multiple physiological systems and there are many potentially adaptive elements to consider. One system that is highly engaged with both the development of atherosclerosis and acute ischemic events is the immune system and associated inflammatory processes.  
+With respect to inflammation, it is well established that immune cells are readily found in early atherosclerotic lesions and activation of the inflammatory cascade can trigger Acute Coronary Syndrome [@ross1999atherosclerosis]. Multiple contributors to the inflammatory cascade including interleukin-6, C-reactive protein and tumor necrosis factor are related to the development cardiovascular events [@ross1999atherosclerosis]. Circulating macrophages are known to be involved with the amplification of the coagulation cascade and the thrombotic process during Acute Coronary Syndrome [@santos2014pathophysiology].
+Bird ancestors possibly relied on inflammation as an adaptive process in dealing with pathogenic and other existential threats. The ability to rapidly recruit inflammatory cells plays an important role in survival for animals living in pathogen rich, dangerous and violent lives. The ability of an animal to engage the immune response in response to pathogenic threat would be highly advantageous and inflammatory responses are important components of both post-traumatic and immunologic response.  
+Future studies can examine the life history traits in susceptible and well-documented orders such as psittaciformes. Analysis of the life history correlates of atherosclerosis in susceptible birds can reveal more about the underlying mechanisms of the vulnerability to spontaneous atherosclerosis in birds and even humans.  
+
+## Data accessibility:
+- All files, figures and functions are available in my github repository: [https://github.com/mehdinj/eeb-174-final-project]()
+
+
+\clearpage
+
+## References
